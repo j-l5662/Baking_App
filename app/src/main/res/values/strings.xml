@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Baking App</string>
+    <string name="recipe_steps_extra">RECIPE_STEPS_EXTRA</string>
+    <string name="recipe_ingredients_list">Recipe Ingredients List</string>
+
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="restart">Restart</string>
+</resources>
