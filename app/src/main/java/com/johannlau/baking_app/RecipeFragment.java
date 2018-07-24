@@ -5,16 +5,17 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.johannlau.baking_app.adapters.RecipeDetailAdapter;
-import com.johannlau.baking_app.utilities.Recipes;
+import com.johannlau.baking_app.utilities.Recipe;
 import com.johannlau.baking_app.utilities.Steps;
 
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public class RecipeFragment extends Fragment implements RecipeDetailAdapter.Deta
     RecyclerView recipeItemsRecyclerView;
 
     private RecipeDetailAdapter recipeDetailAdapter;
-    private static final String INGREDIENTS_EXTRA = "ingredients_detail";
-    private Recipes recipes;
+    private Recipe recipe;
+    private boolean mTwoPane;
 
     public RecipeFragment() {  }
 
@@ -46,8 +47,17 @@ public class RecipeFragment extends Fragment implements RecipeDetailAdapter.Deta
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recipeItemsRecyclerView.setLayoutManager(layoutManager);
-        recipes = getArguments().getParcelable(RecipeStepsActivity.RECIPE_STEPS_EXTRA);
-        ArrayList<Steps> recipe_steps = recipes.getRecipe_steps();
+        recipe = getArguments().getParcelable(RecipeStepsActivity.RECIPE_STEPS_EXTRA);
+        ArrayList<Steps> recipe_steps = recipe.getRecipe_steps();
+        if(getArguments().getBoolean(getString(R.string.tabletmode)) == true){
+            mTwoPane = true;
+            launchRecipeFragment();
+
+        }
+        else{
+            mTwoPane = false;
+        }
+
         recipeDetailAdapter = new RecipeDetailAdapter(recipe_steps,this);
 
 
@@ -57,23 +67,57 @@ public class RecipeFragment extends Fragment implements RecipeDetailAdapter.Deta
 
     @OnClick(R.id.recipe_ingredient_card_view)
     public void onClick(){
-//        Toast.makeText(getContext(),"Ingredients",Toast.LENGTH_SHORT).show();
-        Class recipeIngredientsActivity = RecipeIngredientsActivity.class;
-        Intent intent = new Intent(getContext(),recipeIngredientsActivity);
+        if(mTwoPane) {
+            launchRecipeFragment();
+        }
+        else{
+            Class recipeIngredientsActivity = RecipeIngredientsActivity.class;
+            Intent intent = new Intent(getContext(),recipeIngredientsActivity);
 
-        intent.putExtra(INGREDIENTS_EXTRA, recipes);
-        startActivity(intent);
-
+            intent.putExtra(getString(R.string.recipeingredientsextra), recipe);
+            startActivity(intent);
+        }
     }
 
     @Override
     public void onCardViewClick(int clickedposition) {
-        Steps step= recipes.getRecipe_steps().get(clickedposition);
-        Class stepDetailsActivity = StepDetailActivity.class;
+        Steps step = recipe.getRecipe_steps().get(clickedposition);
+        if(mTwoPane){
 
-        Intent intent = new Intent(getContext(), stepDetailsActivity);
-        intent.putExtra("STEP_DETAIL",step);
-        startActivity(intent);
+            launchDetailFragment(step);
+        }
+        else{
+            Class stepDetailsActivity = StepDetailActivity.class;
+
+            Intent intent = new Intent(getContext(), stepDetailsActivity);
+            intent.putExtra(getString(R.string.stepdetail),step);
+            startActivity(intent);
+        }
+    }
+
+    private void launchRecipeFragment() {
+
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        RecipeIngredientsFragment recipeIngredientsFragment = new RecipeIngredientsFragment();
+        Bundle ingredientBundle = new Bundle();
+        ingredientBundle.putParcelable(getString(R.string.recipeingredientsextra), recipe);
+        recipeIngredientsFragment.setArguments(ingredientBundle);
+        fragmentManager.beginTransaction().replace(R.id.detail_layout,recipeIngredientsFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void launchDetailFragment(Steps step) {
+
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        StepDetailFragment stepDetailFragment = new StepDetailFragment();
+
+        Bundle stepBundle = new Bundle();
+        stepBundle.putParcelable((getString(R.string.fragmentstepdetail)),step);
+        stepDetailFragment.setArguments(stepBundle);
+        fragmentManager.beginTransaction().replace(R.id.detail_layout,stepDetailFragment)
+                .addToBackStack(null)
+                .commit();
 
     }
 }

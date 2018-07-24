@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 
 import com.johannlau.baking_app.adapters.RecipeIngredientsAdapter;
 import com.johannlau.baking_app.utilities.Ingredients;
-import com.johannlau.baking_app.utilities.Recipes;
+import com.johannlau.baking_app.utilities.Recipe;
 
 import java.util.ArrayList;
 
@@ -25,7 +25,6 @@ public class RecipeIngredientsFragment extends Fragment {
     RecyclerView recipeIngredientsRecyclerView;
 
     private RecipeIngredientsAdapter recipeIngredientsAdapter;
-    private static final String INGREDIENTS_EXTRA = "ingredients";
 
     public RecipeIngredientsFragment() {  }
 
@@ -39,7 +38,7 @@ public class RecipeIngredientsFragment extends Fragment {
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recipeIngredientsRecyclerView.setLayoutManager(layoutManager);
-        Recipes recipes = getArguments().getParcelable(INGREDIENTS_EXTRA);
+        Recipe recipes = getArguments().getParcelable(getString(R.string.recipeingredientsextra));
         ArrayList<Ingredients> ingredients = recipes.getRecipe_ingredients();
         recipeIngredientsAdapter = new RecipeIngredientsAdapter(ingredients);
 

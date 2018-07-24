@@ -3,7 +3,21 @@
     <string name="recipe_steps_extra">RECIPE_STEPS_EXTRA</string>
     <string name="recipe_ingredients_list">Recipe Ingredients List</string>
 
+    <string name="no_internet">Not Connected</string>
+
+    <string name="sharedpreferencename">SHARED_PREFERENCE</string>
+    <string name="recipepreferencekey">recipe</string>
+    <string name="recipeingredientsextra">ingredients_detail</string>
+    <string name="stepintentextra">RECIPE_DETAIL</string>
+    <string name="tabletmode">Tablet_bundle</string>
+    <string name="stepdetail">STEP_DETAIL</string>
+    <string name="fragmentstepdetail">DETAIL_DATA</string>
+
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="restart">Restart</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+
+    <string name="restoreStep">RestoreRecipe</string>
 </resources>

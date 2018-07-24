@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.johannlau.baking_app.R;
-import com.johannlau.baking_app.utilities.Recipes;
+import com.johannlau.baking_app.utilities.Recipe;
 
 import java.util.ArrayList;
 
@@ -18,14 +18,14 @@ import butterknife.ButterKnife;
 
 public class RecipeListAdapter extends RecyclerView.Adapter<RecipeListAdapter.ViewHolder>{
 
-    private ArrayList<Recipes> recipesList;
+    private ArrayList<Recipe> recipesList;
     final private CardViewClickListener mOnClickListener;
 
     public interface CardViewClickListener {
         void onCardViewClick(int clickedItemIndex);
     }
 
-    public RecipeListAdapter(ArrayList<Recipes> recipesList, CardViewClickListener cardViewClickListener) {
+    public RecipeListAdapter(ArrayList<Recipe> recipesList, CardViewClickListener cardViewClickListener) {
 
         this.recipesList = recipesList;
         this.mOnClickListener = cardViewClickListener;

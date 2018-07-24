@@ -12,9 +12,9 @@ public class RecipeUtils {
 
     private static final String TAG = RecipeUtils.class.getSimpleName();
 
-    public static ArrayList<Recipes> getRecipes(String json) throws JSONException {
+    public static ArrayList<Recipe> getRecipes(String json) throws JSONException {
 
-        ArrayList<Recipes> recipes = new ArrayList<>();
+        ArrayList<Recipe> recipes = new ArrayList<>();
         ArrayList<Ingredients> ingredients = new ArrayList<>();
         ArrayList<Steps> steps = new ArrayList<>();
 
@@ -33,7 +33,7 @@ public class RecipeUtils {
             catch (JSONException e){
                 printJSONException(e);
             }
-            Recipes recipe = new Recipes(recipeID,recipeName,ingredients,steps);
+            Recipe recipe = new Recipe(recipeID,recipeName,ingredients,steps);
             recipes.add(recipe);
         }
         return recipes;

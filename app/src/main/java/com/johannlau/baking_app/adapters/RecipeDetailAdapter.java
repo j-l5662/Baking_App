@@ -1,6 +1,5 @@
 package com.johannlau.baking_app.adapters;
 
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -10,19 +9,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.johannlau.baking_app.R;
-import com.johannlau.baking_app.StepDetailActivity;
 import com.johannlau.baking_app.utilities.Steps;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class RecipeDetailAdapter extends RecyclerView.Adapter<RecipeDetailAdapter.ViewHolder> {
 
     private ArrayList<Steps> recipesDescriptions;
-    final private DetailCardViewClickListener mOnClickListner;
+    final private DetailCardViewClickListener mOnClickLisenter;
 
     public interface DetailCardViewClickListener {
         void onCardViewClick(int clickedposition);
@@ -30,7 +27,7 @@ public class RecipeDetailAdapter extends RecyclerView.Adapter<RecipeDetailAdapte
     public RecipeDetailAdapter(ArrayList<Steps> recipesDescriptions, DetailCardViewClickListener detailCardViewClickListener) {
 
         this.recipesDescriptions = recipesDescriptions;
-        this.mOnClickListner = detailCardViewClickListener;
+        this.mOnClickLisenter = detailCardViewClickListener;
     }
 
     @NonNull
@@ -46,17 +43,17 @@ public class RecipeDetailAdapter extends RecyclerView.Adapter<RecipeDetailAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
 
         holder.recipeDescriptionTextView.setText(recipesDescriptions.get(position).getShortDescription());
-        holder.recipeStepsCardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Steps step= recipesDescriptions.get(position);
-                Class stepDetailsActivity = StepDetailActivity.class;
-
-                Intent intent = new Intent(v.getContext(), stepDetailsActivity);
-                intent.putExtra("STEP_DETAIL",step);
-                v.getContext().startActivity(intent);
-            }
-        });
+//        holder.recipeStepsCardView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Steps step= recipesDescriptions.get(position);
+//                Class stepDetailsActivity = StepDetailActivity.class;
+//
+//                Intent intent = new Intent(v.getContext(), stepDetailsActivity);
+//                intent.putExtra("STEP_DETAIL",step);
+//                v.getContext().startActivity(intent);
+//            }
+//        });
     }
 
     @Override
@@ -74,13 +71,14 @@ public class RecipeDetailAdapter extends RecyclerView.Adapter<RecipeDetailAdapte
         public ViewHolder(View itemView) {
 
             super(itemView);
+            itemView.setOnClickListener(this);
             ButterKnife.bind(this,itemView);
         }
 
         @Override
         public void onClick(View view) {
             int clickPosition = getAdapterPosition();
-            mOnClickListner.onCardViewClick(clickPosition);
+            mOnClickLisenter.onCardViewClick(clickPosition);
         }
     }
 }

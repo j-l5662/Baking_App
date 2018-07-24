@@ -54,7 +54,6 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
 
 
     private static final String TAG = StepDetailFragment.class.getSimpleName();
-    private final int PENDING_REQUEST_CODE = 22;
     private final String POS_KEY = "EXO_PLAYER_POSITION";
 
     private SimpleExoPlayer exoPlayer;
@@ -75,7 +74,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
         View rootView = inflater.inflate(R.layout.step_detail_fragment,container,false);
         ButterKnife.bind(this,rootView);
 
-        recipe_step = getArguments().getParcelable(StepDetailActivity.STEPS_DETAILS);
+        recipe_step = getArguments().getParcelable(getString(R.string.fragmentstepdetail));
 
         getVideoURLfromSteps(recipe_step);
         getLongDescriptionfromSteps(recipe_step);
@@ -108,6 +107,7 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong(POS_KEY, exoPlayer.getCurrentPosition());
+        outState.putParcelable(getString(R.string.restoreStep),recipe_step);
     }
 
     @Override
@@ -115,6 +115,9 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
         super.onViewStateRestored(savedInstanceState);
         if(savedInstanceState != null) {
             Long savedTime = savedInstanceState.getLong(POS_KEY);
+            recipe_step = savedInstanceState.getParcelable(getString(R.string.restoreStep));
+            Log.v(TAG,recipe_step.getShortDescription());
+            getVideoURLfromSteps(recipe_step);
             exoPlayer.seekTo(savedTime);
         }
     }
@@ -125,12 +128,6 @@ public class StepDetailFragment extends Fragment implements Player.EventListener
         if(exoPlayer == null) {
             initializePlayer();
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        releasePlayer();
     }
 
     @Override

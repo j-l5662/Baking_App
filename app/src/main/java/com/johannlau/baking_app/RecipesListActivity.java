@@ -1,25 +1,31 @@
 package com.johannlau.baking_app;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.johannlau.baking_app.adapters.RecipeListAdapter;
+import com.johannlau.baking_app.utilities.GsonUtils;
 import com.johannlau.baking_app.utilities.Ingredients;
 import com.johannlau.baking_app.utilities.NetworkUtils;
+import com.johannlau.baking_app.utilities.Recipe;
 import com.johannlau.baking_app.utilities.RecipeUtils;
-import com.johannlau.baking_app.utilities.Recipes;
-import com.johannlau.baking_app.utilities.Steps;
+import com.johannlau.baking_app.widget.BakingWidgetProvider;
 
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -28,12 +34,16 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RecipesListActivity extends AppCompatActivity implements RecipeListAdapter.CardViewClickListener {
+public class RecipesListActivity extends AppCompatActivity implements RecipeListAdapter.CardViewClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final String TAG = RecipesListActivity.class.getSimpleName();
+
+    public static final String RECIPE_EXTRA = "RECIPE_DETAIL";
     private static final int INGREDIENTS_LOADER_ID = 22;
-    private ArrayList<Recipes> ingredientsList;
+    private ArrayList<Recipe> ingredientsList;
     private RecyclerView.LayoutManager recipeLayoutManager;
-    private static final String RECIPE_EXTRA = "RECIPE_DETAIL";
+
+    private SharedPreferences mSharedPreferences;
 
     @BindView(R.id.mainrecipeslist_recyclerview)
     RecyclerView mRecipeRecyclerView;
@@ -49,6 +59,8 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
         recipeLayoutManager = new LinearLayoutManager(this);
         mRecipeRecyclerView.setLayoutManager(recipeLayoutManager);
 
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     private void ingredientsNetworkQuery(Bundle bundle){
@@ -70,14 +82,50 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
     public void onCardViewClick(int clickedItemIndex) {
 
         Class recipeDetailsActivity = RecipeStepsActivity.class;
-        Recipes recipe = ingredientsList.get(clickedItemIndex);
+        Recipe recipe = ingredientsList.get(clickedItemIndex);
 
         Intent intent = new Intent(RecipesListActivity.this, recipeDetailsActivity);
-        intent.putExtra(RECIPE_EXTRA,recipe);
+        intent.putExtra(getString(R.string.stepintentextra),recipe);
+
+        String recipeObject = GsonUtils.recipeToStringObj(recipe);
+        String preferenceKey = getString(R.string.recipepreferencekey);
+        SharedPreferences.Editor preferences = mSharedPreferences.edit();
+
+        preferences.putString(preferenceKey,recipeObject);
+        preferences.apply();
         startActivity(intent);
     }
 
-    private static class IngredientNetworkCall implements LoaderManager.LoaderCallbacks<ArrayList<Recipes>> {
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        //Update Widget
+
+        Intent intent = new Intent(this, BakingWidgetProvider.class);
+
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+
+        int[] ids = widgetManager.getAppWidgetIds(new ComponentName(this,BakingWidgetProvider.class));
+
+        RemoteViews rv = new RemoteViews(this.getPackageName(),R.layout.baking_widget_provider);
+        String json = sharedPreferences.getString(getString(R.string.recipepreferencekey),null);
+        Recipe recipe = GsonUtils.stringtoRecipe(json);
+
+        rv.setTextViewText(R.id.widget_recipe_name_text_view,recipe.getRecipe_name());
+        widgetManager.updateAppWidget(new ComponentName(this,BakingWidgetProvider.class),rv);
+        widgetManager.notifyAppWidgetViewDataChanged(ids,R.id.widget_recipe_name_text_view);
+        widgetManager.notifyAppWidgetViewDataChanged(ids,R.id.widget_list_view);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,ids);
+        this.sendBroadcast(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    private static class IngredientNetworkCall implements LoaderManager.LoaderCallbacks<ArrayList<Recipe>> {
 
         private WeakReference<RecipesListActivity> mainActivityWeakReference;
 
@@ -88,10 +136,10 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
 
         @NonNull
         @Override
-        public Loader<ArrayList<Recipes>> onCreateLoader(int id, @Nullable final Bundle args) {
+        public Loader<ArrayList<Recipe>> onCreateLoader(int id, @Nullable final Bundle args) {
 
             final Context mainActivity = mainActivityWeakReference.get();
-            return new AsyncTaskLoader<ArrayList<Recipes>>(mainActivity) {
+            return new AsyncTaskLoader<ArrayList<Recipe>>(mainActivity) {
 
                 @Override
                 protected void onStartLoading() {
@@ -104,12 +152,12 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
 
                 @Nullable
                 @Override
-                public ArrayList<Recipes> loadInBackground() {
+                public ArrayList<Recipe> loadInBackground() {
                     try{
                         if(NetworkUtils.isOnline(mainActivity)){
                             URL url = NetworkUtils.buildURL();
                             String ingredientsJsonResponse = NetworkUtils.getURLResponse(url);
-                            ArrayList<Recipes> jsonIngredientsList = RecipeUtils.getRecipes(ingredientsJsonResponse);
+                            ArrayList<Recipe> jsonIngredientsList = RecipeUtils.getRecipes(ingredientsJsonResponse);
                             return jsonIngredientsList;
                         }
                         else{
@@ -125,7 +173,7 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
         }
 
         @Override
-        public void onLoadFinished(@NonNull Loader<ArrayList<Recipes>> loader, ArrayList<Recipes> data) {
+        public void onLoadFinished(@NonNull Loader<ArrayList<Recipe>> loader, ArrayList<Recipe> data) {
 
             RecipesListActivity mainActivity = mainActivityWeakReference.get();
             if( data != null ) {
@@ -140,7 +188,7 @@ public class RecipesListActivity extends AppCompatActivity implements RecipeList
         }
 
         @Override
-        public void onLoaderReset(@NonNull Loader<ArrayList<Recipes>> loader) {
+        public void onLoaderReset(@NonNull Loader<ArrayList<Recipe>> loader) {
 
         }
     }

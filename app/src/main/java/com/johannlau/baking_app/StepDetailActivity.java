@@ -20,14 +20,15 @@ public class StepDetailActivity extends AppCompatActivity {
         setContentView(R.layout.step_detail_activity);
 
         Intent startedIntent = getIntent();
-        if(startedIntent.hasExtra("STEP_DETAIL")) {
-            recipeStep = startedIntent.getParcelableExtra("STEP_DETAIL");
+        String stepDetailExtra = getString(R.string.stepdetail);
+        if(startedIntent.hasExtra(stepDetailExtra)) {
+            recipeStep = startedIntent.getParcelableExtra(stepDetailExtra);
         }
 
         StepDetailFragment detailFragment = new StepDetailFragment();
 
         Bundle recipe_detail_bundle = new Bundle();
-        recipe_detail_bundle.putParcelable(STEPS_DETAILS, recipeStep);
+        recipe_detail_bundle.putParcelable(getString(R.string.fragmentstepdetail), recipeStep);
 
         detailFragment.setArguments(recipe_detail_bundle);
         FragmentManager fragmentManager = getSupportFragmentManager();
